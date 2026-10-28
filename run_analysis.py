@@ -3,7 +3,6 @@ import argparse
 import csv
 import json
 import math
-import os
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -131,59 +130,85 @@ def calculate():
 
 
 def charts(series, bridge, peers, scenarios):
-    os.environ.setdefault("MPLCONFIGDIR", "/tmp/hyperliquid-matplotlib")
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
     from collections import defaultdict
+    from chart_style import research_chart, save_chart, BLUE, MINT, MUTED, GRID
+    import matplotlib.dates as mdates
     destination = ROOT / "charts"
-    destination.mkdir(exist_ok=True)
-    plt.rcParams.update({"font.size": 10, "axes.spines.top": False, "axes.spines.right": False})
-
-    def finish(fig, name, source):
-        fig.text(0.02, 0.02, source, fontsize=8, color="#555555")
-        fig.tight_layout(rect=(0, 0.06, 1, 1))
-        fig.savefig(destination / name, dpi=170)
-        plt.close(fig)
 
     monthly = defaultdict(lambda: [0, 0])
     for (product, metric), values in series.items():
         for day, value in values.items():
             monthly[day.strftime("%Y-%m")][0 if metric == "fees" else 1] += value / 1e6
     keys = sorted(monthly)
-    fig, ax = plt.subplots(figsize=(11, 4.8))
+    fig, ax = research_chart(
+        "hyperliquid monthly fees & protocol revenue",
+        "selected perps + spot adapters  |  usd millions",
+    )
     x = list(range(len(keys)))
-    ax.bar([i - .2 for i in x], [monthly[k][0] for k in keys], .4, label="Fees", color="#16324f")
-    ax.bar([i + .2 for i in x], [monthly[k][1] for k in keys], .4, label="Protocol revenue", color="#26a69a")
-    ax.set_xticks(x, [k + ("*" if k in [keys[0], keys[-1]] else "") for k in keys], rotation=45)
-    ax.set_ylabel("USD millions")
-    ax.set_title("Hyperliquid: monthly economics in the selected adapters")
-    ax.legend()
-    finish(fig, "monthly_economics.png", "Source: DefiLlama, saved daily observations through 27 Oct 2026. * Partial month; includes AQAv2 from Aug 2026.")
+    ax.bar([i - .19 for i in x], [monthly[k][0] for k in keys], .38, label="Fees", color=BLUE)
+    ax.bar([i + .19 for i in x], [monthly[k][1] for k in keys], .38, label="Protocol revenue", color=MINT)
+    ax.set_xticks(x, [k + ("*" if k in [keys[0], keys[-1]] else "") for k in keys], rotation=45, ha="right")
+    ax.set_ylabel("$M")
+    ax.set_ylim(0, max(v[0] for v in monthly.values()) * 1.18)
+    ax.legend(frameon=False, loc="upper left", ncol=2)
+    save_chart(fig, ax, destination / "monthly_economics.png",
+               "source: DefiLlama daily snapshots  |  through 27 Oct 2026",
+               "* partial month  |  includes AQAv2 reserve income from Aug 2026")
 
-    fig, ax = plt.subplots(figsize=(10, 4.6))
+    fig, ax = research_chart(
+        "hyperliquid bridge series",
+        "provider-reported balance  |  usd billions",
+    )
     dates = sorted(bridge)
-    ax.plot(dates, [bridge[d] / 1e9 for d in dates], color="#16324f", linewidth=2)
-    ax.set_title("DefiLlama Hyperliquid Bridge series")
-    ax.set_ylabel("USD billions")
-    finish(fig, "bridge_series.png", "Source: DefiLlama, through 27 Oct 2026. Provider series; coverage versus native USDC remains unresolved.")
+    balances = [bridge[d] / 1e9 for d in dates]
+    ax.plot(dates, balances, color=BLUE, linewidth=2)
+    ax.scatter([dates[-1]], [balances[-1]], color=MINT, s=25, zorder=4)
+    ax.annotate(f"$"+"{:.2f}B".format(balances[-1]), (dates[-1], balances[-1]),
+                xytext=(-8, 12), textcoords="offset points", ha="right",
+                color=MINT, fontsize=10)
+    ax.set_ylabel("$B")
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    save_chart(fig, ax, destination / "bridge_series.png",
+               "source: DefiLlama Hyperliquid Bridge  |  through 27 Oct 2026",
+               "coverage versus native USDC is unresolved; not a measure of all client deposits")
 
-    fig, ax = plt.subplots(figsize=(10, 4.6))
-    names = [p["name"] for p in peers]
-    ax.barh(names[::-1], [p["volume_30d_usd"] / 1e9 for p in peers][::-1], color="#26a69a")
-    ax.set_xlabel("30-day perpetual notional volume, USD billions")
-    ax.set_title("Five-venue comparison: volume, not profitability")
-    finish(fig, "peer_volume.png", "Source: Token Terminal connector, rounded values; 28 Sep-27 Oct 2026. Aster volume is reported off-chain.")
+    fig, ax = research_chart(
+        "hyperliquid & perpetual exchange peers",
+        "30-day notional volume  |  selected five-venue cohort  |  usd billions",
+        left=0.18,
+    )
+    names = [p["name"] for p in peers][::-1]
+    volumes = [p["volume_30d_usd"] / 1e9 for p in peers][::-1]
+    ax.grid(False)
+    ax.grid(axis="x", color=GRID, linewidth=.7)
+    ax.barh(names, volumes, color=[MINT if n == "Hyperliquid" else BLUE for n in names], height=.56)
+    ax.set_xlim(0, max(volumes) * 1.19)
+    ax.set_xlabel("30-day volume ($B)", labelpad=10)
+    for name, value in zip(names, volumes):
+        ax.text(value + 3, name, f"$"+"{:.1f}B".format(value), va="center",
+                color=MINT if name == "Hyperliquid" else MUTED, fontsize=10)
+    save_chart(fig, ax, destination / "peer_volume.png",
+               "source: Token Terminal connector, rounded values  |  28 Sep-27 Oct 2026",
+               "cohort share is not total-market share; Aster volume is reported off-chain")
 
-    fig, ax = plt.subplots(figsize=(9, 4.8))
-    for factor, label in [(0.5, "Stress: 0.5x revenue"), (1.0, "Flat: 1.0x"), (1.5, "Growth: 1.5x")]:
+    fig, ax = research_chart(
+        "hype valuation sensitivity",
+        "annual revenue assumptions  |  current total supply of 951.54m hype",
+    )
+    for factor, label in [(0.5, "Stress: 0.5x"), (1.0, "Flat: 1.0x"), (1.5, "Growth: 1.5x")]:
         selected = [s for s in scenarios if s["revenue_factor"] == factor]
-        ax.plot([s["revenue_multiple"] for s in selected], [s["price_current_total_supply_usd"] for s in selected], marker="o", label=label)
-    ax.set_xlabel("Assumed capitalization / annual protocol revenue")
-    ax.set_ylabel("Illustrative USD per HYPE")
-    ax.set_title("Revenue sensitivity using current total supply")
-    ax.legend()
-    finish(fig, "valuation_sensitivity.png", "Assumptions, not forecasts. DefiLlama 30d revenue x 365/30; CoinGecko total supply, 28 Oct 2026.")
+        ax.plot([s["revenue_multiple"] for s in selected],
+                [s["price_current_total_supply_usd"] for s in selected],
+                marker="o", markersize=5, linewidth=2, label=label)
+    ax.set_xticks([15, 25, 35], ["15x", "25x", "35x"])
+    ax.set_xlabel("Capitalization / annual protocol revenue", labelpad=10)
+    ax.set_ylabel("Illustrative price ($/HYPE)")
+    ax.set_ylim(0, max(s["price_current_total_supply_usd"] for s in scenarios) * 1.18)
+    ax.legend(frameon=False, loc="upper left", ncol=3, fontsize=9)
+    save_chart(fig, ax, destination / "valuation_sensitivity.png",
+               "source: DefiLlama revenue + CoinGecko supply  |  research snapshot 28 Oct 2026",
+               "illustrative assumptions, not price targets  |  annual revenue = 30d revenue x 365/30")
 
 
 def main():
