@@ -1,0 +1,32 @@
+[
+  {
+    "file": "data/raw/bridge.json",
+    "sha256": "ec6e3cdade1e99b4cfdbf378b77f8dd6673538a121f255253c6aabcfebb4330b",
+    "bytes": 28461
+  },
+  {
+    "file": "data/raw/market_context.json",
+    "sha256": "26d830471d178810021f9203a608f07f04593f521a67984fdbcaa5c2256eb86a",
+    "bytes": 2090
+  },
+  {
+    "file": "data/raw/perps.json",
+    "sha256": "03921a38760313c76b0003c0c8e373dade703ba1f757be7839466fc196db5b36",
+    "bytes": 61955
+  },
+  {
+    "file": "data/raw/spot.json",
+    "sha256": "27e252c0c16975b2a6401b2bfa8f3ddaa34569021ffec8882f4e47c79c4cce25",
+    "bytes": 60770
+  },
+  {
+    "file": "data/raw/token.json",
+    "sha256": "74fa1a6a3bf33759d2cce36e912082fc295ae3c26f98c15d9861958998a4f886",
+    "bytes": 584
+  },
+  {
+    "file": "data/raw/tt.md",
+    "sha256": "463a7497fb2608b9bfc13c0a7427c4e17861b7c3339a6d63884f81cf91309c7a",
+    "bytes": 13707
+  }
+]

@@ -1,0 +1,82 @@
+{
+  "as_of": "2026-10-27",
+  "retrieved_on": "2026-10-28",
+  "source": "Token Terminal research connector; rounded output transcribed from tt.md, not raw daily observations",
+  "precision": "rounded",
+  "peers": [
+    {
+      "name": "Hyperliquid",
+      "volume_30d_usd": 231000000000,
+      "revenue_30d_usd": 70600000
+    },
+    {
+      "name": "Lighter",
+      "volume_30d_usd": 50900000000,
+      "revenue_30d_usd": 3660000
+    },
+    {
+      "name": "Aster",
+      "volume_30d_usd": 47200000000,
+      "revenue_30d_usd": null
+    },
+    {
+      "name": "GMX",
+      "volume_30d_usd": 29300000000,
+      "revenue_30d_usd": 5100000
+    },
+    {
+      "name": "dYdX",
+      "volume_30d_usd": 1170000000,
+      "revenue_30d_usd": 243000
+    }
+  ],
+  "hyperliquid": {
+    "fees_30d_usd": 89000000,
+    "revenue_30d_usd": 70600000,
+    "volume_30d_usd": 231000000000,
+    "open_interest_usd": 7830000000,
+    "average_daily_revenue_generating_addresses_30d": 83300,
+    "perp_active_traders": null,
+    "earnings": null
+  },
+  "products_30d": [
+    {
+      "name": "Perps",
+      "fees_usd": 65800000,
+      "revenue_usd": 52100000
+    },
+    {
+      "name": "USDC reserve",
+      "fees_usd": 20900000,
+      "revenue_usd": 16200000
+    },
+    {
+      "name": "Spot",
+      "fees_usd": 1810000,
+      "revenue_usd": 1740000
+    },
+    {
+      "name": "HyperEVM",
+      "fees_usd": 519000,
+      "revenue_usd": 519000
+    },
+    {
+      "name": "Outcomes",
+      "fees_usd": 82600,
+      "revenue_usd": 43300
+    }
+  ],
+  "defillama_page": {
+    "source": "https://defillama.com/protocol/hyperliquid-perps",
+    "volume_30d_usd": 206190000000,
+    "open_interest_usd": 7822000000,
+    "precision": "rounded web page",
+    "scope": "perps fee adapter includes builder fees and AQAv2 income since 2026-08-27"
+  },
+  "unlock_indication": {
+    "source": "https://www.coingecko.com/en/coins/hyperliquid",
+    "date": "2026-11-06",
+    "tokens": 9920000,
+    "status": "third-party schedule indication; not independently verified against contributor vesting contracts; not a sell forecast"
+  }
+}
